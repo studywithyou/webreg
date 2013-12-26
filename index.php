@@ -13,14 +13,5 @@ Please select an option from below<br><br>
 <a href=view_rosters.php>Print Rosters</a><br>
 <a href=view_free_agents.php>Print Free Agents</a>
 </p>
-<?php
-
-require_once 'DB.php';
-require_once 'db_config.php';
-$db =& DB::connect(DSN);
-@$db->query('BEGIN');
-
-?>
-
 </body>
 </html>
