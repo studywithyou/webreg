@@ -1,8 +1,8 @@
 <?php
-
-// db_config.php
-
-// DB configuration values for WEBREG
-
-define('DSN',"pgsql://stats:st@ts=Fun@127.0.0.1/ibl_stats")
-?>
+$connection_factory = include 'vendor/aura/sql/scripts/instance.php';
+$db = $connection_factory->newInstance(
+    'pgsql',
+    'host=localhost;dbname=ibl_stats',
+    'stats',
+    'st@ts=Fun'
+);

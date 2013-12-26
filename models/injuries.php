@@ -29,8 +29,8 @@ class Injury
             ";
         $result = $this->_db->query($sql);
         return $result->fetchRow(DB_FETCHMODE_ASSOC);
-    } 
-    
+    }
+
     public function getAll()
     {
         $sql = "
@@ -39,19 +39,7 @@ class Injury
             JOIN franchises f ON i.franchise_id = f.id
             ORDER BY i.week_starting, f.nickname, i.week_ending
             ";
-        $results = $this->_db->query($sql);
-
-        if (!$results) {
-            return array();
-        }
-
-        $injuries = array();
-        
-        while ($results->fetchInto($row, DB_FETCHMODE_ASSOC)) {
-            $injuries[] = $row; 
-        }
-
-        return $injuries;
+        return $this->_db->fetchAll($sql);
     }
 
     public function getByWeek($week)

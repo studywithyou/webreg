@@ -14,16 +14,11 @@ class Franchise
             SELECT *
             FROM franchises
             ORDER BY nickname
-            ";
-        $results = $this->_db->query($sql);
+        ";
+        $franchises = [];
+        $rows = $this->_db->fetchAssoc($sql);
 
-        if (!$results) {
-            return array();
-        }
-
-        $franchises = array();
-
-        while ($results->fetchInto($row, DB_FETCHMODE_ASSOC)) {
+        foreach ($rows as $row) {
             $franchises[$row['id']] = $row['nickname'];
         }
 

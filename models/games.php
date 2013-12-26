@@ -11,15 +11,9 @@ class Game
     public function getMaxWeek()
     {
         $sql = "SELECT MAX(week) FROM games";
-        $result = $this->_db->query($sql);
-        $row = $result->fetchRow();
-        $week = 1;
+        $row = $this->_db->fetchOne($sql);
 
-        if ($row[0] !== null) {
-            $week = $row[0];
-        }
-
-        return $week;
+        return $row['max'] ?: 0;
     }
 }
 
