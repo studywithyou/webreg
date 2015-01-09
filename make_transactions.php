@@ -1,4 +1,4 @@
-<?php
+<?hh
 
 // make_transactions.php
 
@@ -8,17 +8,12 @@
 //  ** releases
 //  ** free agent signings
 //  ** promotions and demotions
+echo "<h3 align=center>WebReg -- Make Transactions</h3>";
+echo "<div align=center>";
 
-session_start();
-
-?>
-<h3 align=center>WebReg -- Make Transactions</h3>
-
-<div align=center>
-<?php
-
-// as always, if they're not logged in, send them to 
+// as always, if they're not logged in, send them to
 // the login page
+session_start();
 
 if ($_SESSION["user"]=="")
 {
@@ -27,13 +22,10 @@ if ($_SESSION["user"]=="")
 else
 {
     // Give them options to make transactions
-    ?>
+    echo '
     <div align="center">
     <a href="make_a_trade.php">Make A Trade</a><br>
     <a href="free_agent.php">Sign / Release A Player</a><br>
     <a href="roster_management.php">Roster Management</a><br>
-    </div>
-    <?php
-}    
-
-?>
+    </div>';
+}

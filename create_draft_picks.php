@@ -1,10 +1,10 @@
-<?php
+<?hh
 
 // create_draft_picks.php
 
 // CLI script to populate database with draft picks for a year
-require_once 'db_config.php';
-include_once('transaction_log.php');
+require 'bootstrap.php';
+require 'db_config.php';
 
 $year = "(13)";
 $dbh = new PDO(DSN);

@@ -1,9 +1,9 @@
 <?php
-class Franchise 
+class Franchise
 {
     protected $_db;
 
-    public function __construct($db)
+    public function __construct(PDO $db)
     {
         $this->_db = $db;
     }
@@ -14,9 +14,11 @@ class Franchise
             SELECT *
             FROM franchises
             ORDER BY nickname
-        ";
+            ";
         $franchises = [];
-        $rows = $this->_db->fetchAssoc($sql);
+        $stmt = $this->_db->prepare($sql);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($rows as $row) {
             $franchises[$row['id']] = $row['nickname'];

@@ -1,5 +1,5 @@
 <?php
-class Game 
+class Game
 {
     protected $_db;
 
@@ -11,9 +11,11 @@ class Game
     public function getMaxWeek()
     {
         $sql = "SELECT MAX(week) FROM games";
-        $row = $this->_db->fetchOne($sql);
+        $stmt = $this->_db->prepare($sql);
+        $stmt->execute();
+        $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $row['max'] ?: 0;
+        return (isset($row['max'])) ? $row['max'] : 1;
     }
 }
 

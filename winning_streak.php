@@ -1,4 +1,5 @@
-<?php
+<?hh
+require 'bootstrap.php';
 $db = pg_connect("host=localhost dbname=ibl_stats user=chartjes password=9wookie");
 $year = 'pit' . $_GET['year'];
 $sql = "SELECT mlb,name FROM $year GROUP BY mlb,name";
@@ -41,4 +42,3 @@ foreach ($longestStreak as $player => $streak) {
 }
 
 pg_close($db);
-?>

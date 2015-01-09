@@ -1,17 +1,12 @@
-<html>
-<head>
-<title>WebReg -- Modify Rosters</title>
-</head>
-<body>
-<h3 align=center>WebReg -- Modify Rosters</h3>
-<?php
+<?hh
+require 'bootstrap.php';
+require './templates/modify_roster/header.php';
 
 // Page controller for modifying rosters
-include 'vendor/autoload.php';
-include 'db_config.php';
-include 'transaction_log.php';
+require 'db_config.php';
+require 'transaction_log.php';
 
-include 'models/rosters.php';
+require 'models/rosters.php';
 
 // modify_roster.php
 
@@ -24,12 +19,14 @@ include 'models/rosters.php';
 $get_team=0;
 $roster = new Roster($db);
 
-if (isset($_POST["get_team"])) $get_team=$_POST["get_team"];
+if (isset($_POST["get_team"])) {
+    $get_team = $_POST["get_team"];
+}
 
 // Now, if we don't have a team selected, just get a dropdown list
 // of teams to work with
 if ($get_team==0) {
-    include './templates/modify_roster/no_team.php';
+    require './templates/modify_roster/no_team.php';
 } else {
     // Let's collect all the data we just grabbed via _POST
     if (isset($_POST["id"])) $id=$_POST["id"];
@@ -68,7 +65,7 @@ if ($get_team==0) {
         $release_list=$_POST["release"];
         $roster->releasePlayerByList($release_list);
 
-        include 'templates/modify_roster/release.php';
+        require 'templates/modify_roster/release.php';
 
         // Build log_entry for transaction log
         $log_entry="Releases ".implode(", ",$released_player);
@@ -84,7 +81,6 @@ if ($get_team==0) {
     if ($modify==1)
     {
         $response = $roster->update($_POST);
-
         // Now, make an entry in the transaction log if neccessary
         if (count($response['activate_list']) > 0)
         {
@@ -99,7 +95,7 @@ if ($get_team==0) {
         }
 
         // Display our template showing what was updated
-        include 'templates/modify_roster/update.php';
+        require 'templates/modify_roster/update.php';
     }
 
     // Check to see if we're adding a new player to this list
@@ -122,13 +118,11 @@ if ($get_team==0) {
     // We've picked a team, let's grab all the players on their roster
     $ibl_team=$_POST["ibl_team"];
     $sql="SELECT id,tig_name,item_type,comments,status FROM teams WHERE ibl_team='$ibl_team' ORDER BY tig_name";
-    $result=$db->query($sql);
-
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     // Include our main template
-    include 'templates/modify_roster/main.php';
+    require 'templates/modify_roster/main.php';
 }
-?>
-<hr>
-<div align=center><a href=roster_management.php>Return to Roster Management</a></div>
-</body>
-</html>
+
+require 'templates/modify_roster/footer.php';

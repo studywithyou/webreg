@@ -15,7 +15,8 @@ class Injury
         }
 
         $sql = "DELETE FROM injuries WHERE id = '{$id}'";
-        $this->_db->query($sql);
+        $stmt = $this->_db->prepare($sql);
+        $stmt->execute();
 
         return true;
     }
@@ -24,11 +25,13 @@ class Injury
     {
         $sql = "
             SElECT *
-            FROM injuries
+
             WHERE id = '{$id}'
-            ";
-        $result = $this->_db->query($sql);
-        return $result->fetchRow(DB_FETCHMODE_ASSOC);
+        ";
+        $stmt = $this->_db->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getAll()
@@ -39,7 +42,10 @@ class Injury
             JOIN franchises f ON i.franchise_id = f.id
             ORDER BY i.week_starting, f.nickname, i.week_ending
             ";
-        return $this->_db->fetchAll($sql);
+        $stmt = $this->_db->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getByWeek($week)
@@ -50,6 +56,10 @@ class Injury
             WHERE week_starting >= {$week}
             ORDER BY week_starting
             ";
+        $stmt = $this->_db->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
         $results = $this->_db->query($sql);
 
         if (!$results) {
@@ -58,12 +68,12 @@ class Injury
 
         $injuries = array();
 
-        while ($results->fetchInto($row, DB_FETCHMODE_ASSOC)) {
-            $injuries[] = $row; 
+        foreach ($results as $row) {
+            $injuries[] = $row;
         }
 
         return $injuries;
-    } 
+    }
 
     public function save($data)
     {
@@ -93,11 +103,17 @@ class Injury
 
     protected function _generateUuid()
     {
-        return sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
-            mt_rand( 0, 0x0fff ) | 0x4000,
-            mt_rand( 0, 0x3fff ) | 0x8000,
-            mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ) );
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
+        );
     }
 
     protected function _update($data)
@@ -119,6 +135,4 @@ class Injury
             $data['id']
         ));
     }
-
 }
-

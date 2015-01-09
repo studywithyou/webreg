@@ -1,11 +1,3 @@
-<?php
-
-// roster_management.php
-
-// Allows the webreg to manipulate rosters
-
-?>
-
 <h3 align=center>WebReg -- Roster Management</h3>
 <div align=center>
 <a href=make_a_trade.php>Make A Trade</a><br>

@@ -1,13 +1,12 @@
-<?php
+<?hh
+require 'bootstrap.php';
 
 // Script that processes an injury to be added to the system
-include 'DB.php';
-include 'db_config.php';
+require 'db_config.php';
 
-include './models/games.php';
-include './models/injuries.php';
+require './models/games.php';
+require './models/injuries.php';
 
-$db = DB::connect(DSN);
 $injuryModel = new Injury($db);
 
 // Grab whatever came in via $_POST and make sure it's okay
@@ -30,9 +29,8 @@ $data = array(
  */
 if (isset($_POST['token'])) {
     $expectedToken = sha1('ibl2012' . $_POST['id']);
-    
+
     if ($expectedToken != $_POST['token']) {
-    	die('bad token, motherfucker');
         header('Location: injury_management.php');
         exit();
     }
@@ -44,6 +42,3 @@ $injuryModel->save($data);
 
 header('Location: injury_management.php');
 exit();
-    
-
-

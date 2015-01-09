@@ -1,4 +1,4 @@
-<?php
+<?hh
 
 // script that displays an injury that is to be edited
 include 'DB.php';
@@ -20,4 +20,3 @@ $injury = $injuryModel->find($injuryId);
 $franchises = $franchiseModel->getAll();
 $token = sha1('ibl2012' . $injury['id']);
 include './templates/edit_injury.php';
-    

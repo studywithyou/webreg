@@ -1,4 +1,4 @@
-<?Php
+<?php
 
 // db_access.inc
 

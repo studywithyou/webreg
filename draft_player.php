@@ -4,12 +4,12 @@
 </head>
 <body>
 <h3 align="Center">WebReg -- Draft Free Agents</h3>
-<?php 
+<?hh
 die('under construction, will reopen for 2013 draft');
 
 /*
-require_once 'db_config.php';
-require_once 'transaction_log.php';
+require_once 'db_config.<?hh';
+require_once 'transaction_log.<?hh';
 
 $task = "list";
 $dbh = new PDO(DSN);
@@ -40,25 +40,25 @@ if ($task == "draft") {
 
         // Now, we can display the form to let them assign the player to a team
 ?>
-<form action="<?php print $_SERVER['PHP_SELF']; ?>" method="post">
+<form action="<?hh print $_SERVER['PHP_SELF']; ?>" method="post">
 <input type="hidden" name="task" value="do_draft">
-<input type="hidden" name="id" value="<?php print $id ;?>">
-<input type="hidden" name="tig_name" value="<?php print $tig_name; ?>"> 
+<input type="hidden" name="id" value="<?hh print $id ;?>">
+<input type="hidden" name="tig_name" value="<?hh print $tig_name; ?>">
 <div align="center">
 <table>
 <tr>
-<td><?php print $tig_name; ?></td>
+<td><?hh print $tig_name; ?></td>
 <td><select name="ibl_team">
-<?php foreach ($team_list as $ibl_team) : ?>
-    <option value="<?php print $ibl_team; ?>"><?php print $ibl_team; ?></option>\n
-<?php endforeach; ?>
+<?hh foreach ($team_list as $ibl_team) : ?>
+    <option value="<?hh print $ibl_team; ?>"><?hh print $ibl_team; ?></option>\n
+<?hh endforeach; ?>
                                 </select>
                                 </td>
                                 <td><select name="round">
-<?php foreach ($round as $value) : ?>
-    <option value="<?php print $value; ?>"><?php print "{$value} Round ".ROUND; ?></option>\n
-<?php endforeach; ?>
-<?php
+<?hh foreach ($round as $value) : ?>
+    <option value="<?hh print $value; ?>"><?hh print "{$value} Round ".ROUND; ?></option>\n
+<?hh endforeach; ?>
+<?hh
         }
 ?>
 </select>
@@ -68,7 +68,7 @@ if ($task == "draft") {
 </table>
 </div>
 </form>
-<?php 
+<?hh 
     } else {
         print "Invalid player ID<br>";
         $task = "list";
@@ -132,22 +132,22 @@ if ($task == "list") {
 ?>
                 <div align="center">
                 <table>
-<?php
+<?hh
     foreach ($tig_name as $id=>$player) {
 ?>
                                 <tr>
-                                <td><?php print $player; ?></td>
-                                <td><a href=<?php print $_SERVER['PHP_SELF']; ?>?task=draft&id=<?php print $id; ?>>Draft</a></td>
+                                <td><?hh print $player; ?></td>
+                                <td><a href=<?hh print $_SERVER['<?hh_SELF']; ?>?task=draft&id=<?hh print $id; ?>>Draft</a></td>
                                 </tr>
-<?php
+<?hh
     }
 ?>
                 </table>
                 </div>
-<?php
+<?hh
 }
 
 ?>
 <hr>
-<div align="center"><a href=free_agents.php>Return to Manage Free Agents</a></div>
+<div align="center"><a href=free_agents.<?hh>Return to Manage Free Agents</a></div>
  */

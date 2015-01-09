@@ -1,13 +1,11 @@
-<?php
+<?hh
 // Controller for "Make a Trade" page
-include 'DB.php';
-include 'db_config.php';
-
-$db = DB::connect(DSN);
+require 'bootstrap.php';
+require 'db_config.php';
 
 // Grab all our models
-include './models/franchises.php';
-include './models/rosters.php';
+require './models/franchises.php';
+require './models/rosters.php';
 
 $franchiseModel = new Franchise($db);
 $rosterModel = new Roster($db);
@@ -19,4 +17,4 @@ $team1 = filter_input(INPUT_POST, 'team1', FILTER_SANITIZE_ENCODED);
 $team2 = filter_input(INPUT_POST, 'team2', FILTER_SANITIZE_ENCODED);
 $team1Roster = $rosterModel->getByNickname($team1);
 $team2Roster = $rosterModel->getByNickname($team2);
-include './templates/make_trade.php';
+require './templates/make_trade.php';

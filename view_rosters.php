@@ -1,35 +1,26 @@
-<?php
+<?hh
+require 'bootstrap.php';
 
 // view_rosters.php
-require 'DB.php';
-require 'db_config.php';
-
 // Generates a team-by-team roster report
-?>
-<html>
-<head>
-<title>WebReg -- View Rosters</title>
-</head>
-<body>
-<h3 align="center">WebReg -- View Rosters</h3>
-<?php
+require 'db_config.php';
+require 'templates/rosters/header.php';
 
-function display_rosters($team_list)
+function display_rosters($team_list, $db)
 {
-	$db = & DB::connect(DSN);
-
 	// goes through array displaying the rosters for the teams on the list
 	foreach ($team_list as $team)
 	{
 		print "$team<br>===<br><br>";
-
+        $counter = 0;
 		// Display the pitchers first
 		print "PITCHERS<br>";
-		$sql="SELECT tig_name,comments,status FROM teams WHERE ibl_team='$team' AND item_type=1 ORDER BY tig_name";
-		$result=$db->query($sql);
-		$counter=0;
+        $sql="SELECT tig_name,comments,status FROM teams WHERE ibl_team=? AND item_type=1 ORDER BY tig_name";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array($team));
+        $results = $stmt->fetchAll();
 
-		while ($result->fetchInto($row)) {
+        foreach ($results as $row) {
 			$counter++;
 			$player_name=$row[0];
 			$comments=$row[1];
@@ -44,10 +35,12 @@ function display_rosters($team_list)
 
 		// Now, show the hitters
 		print "<br>BATTERS<br>";
-		$sql="SELECT tig_name,comments,status FROM teams WHERE ibl_team='$team' AND item_type=2 ORDER BY tig_name";
-		$result=$db->query($sql);
+        $sql="SELECT tig_name,comments,status FROM teams WHERE ibl_team='$team' AND item_type=2 ORDER BY tig_name";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($team);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-		while ($result->fetchInto($row,DB_FETCHMODE_ASSOC)) {
+        foreach ($results as $row) {
 			$counter++;
 			$player_name=$row['tig_name'];
 			$comments=$row['comments'];
@@ -71,11 +64,13 @@ function display_rosters($team_list)
 
 		// Finally we need to print out their draft picks
 		print "<br />DRAFT PICKS<br />";
-		$sql = "SELECT tig_name FROM teams WHERE ibl_team='{$team}' AND item_type=0";
-		$result = $db->query($sql);
+        $sql = "SELECT tig_name FROM teams WHERE ibl_team = ? AND item_type = 0";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array($team));
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		$picks = Array();
 
-		while ($result->fetchInto($row,DB_FETCHMODE_ASSOC)) {
+        foreach ($results as $row) {
 			$picks[] = trim($row['tig_name']);
 		}
 
@@ -85,19 +80,21 @@ function display_rosters($team_list)
 }
 
 // create an array with the rosters seperated by conference
-
-$db = DB::connect(DSN);
 $sql = "SELECT nickname FROM franchises WHERE conference = 'AC' ORDER BY nickname";
-$result = $db->query($sql);
+$stmt = $db->prepare($sql);
+$stmt->execute();
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-while ($result->fetchInto($row, DB_FETCHMODE_ASSOC)) {
+foreach ($results as $row) {
 	$ac_teams[] = trim($row['nickname']);
 }
 
 $sql = "SELECT nickname FROM franchises WHERE conference = 'NC' ORDER BY nickname";
-$result = $db->query($sql);
+$stmt = $db->prepare($sql);
+$stmt->execute();
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-while ($result->fetchInto($row, DB_FETCHMODE_ASSOC)) {
+foreach ($results as $row) {
 	$nc_teams[] = trim($row['nickname']);
 }
 
@@ -105,9 +102,4 @@ print "American Conference<br><br>";
 display_rosters($ac_teams);
 print "<br><br>National Conference<br><br>";
 display_rosters($nc_teams);
-
-?>
-<hr>
-<div align="center">Return to <a href=index.php>main page</a></div>
-</body>
-</html>
+require 'templates/rosters/footer.php';

@@ -1,50 +1,35 @@
-<html>
-<head>
-<title>WebReg -- Make A Trade</title>
-</head>
-<body>
-<h3 align="Center">WebReg -- Make A Trade</h3>
+<?hh
+require 'bootstrap.php';
+require 'db_config.php';
+require 'models/franchises.php';
+require 'models/rosters.php';
 
-<?php
-
-// make_a_trade.php
-
-// Interface to make trades between two teams
-
-require_once 'DB.php';
-require_once 'db_config.php';
-
+require 'templates/make_a_trade/header.php';
 $task="";
-$db =& DB::connect(DSN);
 
 if (isset($_POST["task"])) {
     $task=$_POST["task"];
 }
-
 if ($task=="show_rosters") {
     // Make sure they didn't pick the same team for both parties
     $team1=$_POST["team1"];
     $team2=$_POST["team2"];
 
-    if ($team1==$team2) {
-?>
-                <div align=center><font color=red>You must pick two different teams!</font></div>
-<?php
+    if ($team1 == $team2) {
+        echo "<div align=center><font color=red>You must pick two different teams!</font></div>";
         $task="";
     } else {
         // Okay, let's show the rosters so we can do a trade
-        $sql="SELECT tig_name FROM teams WHERE ibl_team='$team1' ORDER BY tig_name";
-        $result=$db->query($sql);
+        $rosterModel = new Roster($db);
+        $roster1 = $rosterModel->getByNickname($team1);
+        $roster2 = $rosterModel->getByNickname($team2);
 
-        while ($result->fetchInto($row)) {
-            $team1_list[]=trim($row[0]);
+        foreach ($roster1 as $item) {
+            $team1_list[] = $item['tig_name'];
         }
 
-        $sql="SELECT tig_name FROM teams WHERE ibl_team='$team2' ORDER BY tig_name";
-        $result=$db->query($sql);
-
-        while ($result->fetchInto($row)) {
-            $team2_list[]=trim($row[0]);
+        foreach ($roster2 as $item) {
+            $team2_list[] = $item['tig_name'];
         }
 
         $t1_size=count($team1_list);
@@ -57,46 +42,25 @@ if ($task=="show_rosters") {
         }
 
         $team1_dropdown="<select multiple name=team1_trade[] size=$dropdown_size><br>";
-       
+
         foreach ($team1_list as $player) {
-            $team1_dropdown .= 
+            $team1_dropdown .=
                 '<option value="' . $player . '">' . $player . '</option><br>';
         }
-        
+
         $team1_dropdown.="</select>";
 
         $team2_dropdown="<select multiple name=team2_trade[] size=$dropdown_size><br>";
-      
+
         foreach ($team2_list as $player) {
-            $team2_dropdown .= 
+            $team2_dropdown .=
                 '<option value="' . $player . '">' . $player . '</option><br>';
         }
-        
+
         $team2_dropdown.="</select>";
 
         // Let's display the form to do the trade
-?>
-                <div align=center>
-                <form action=<?php print $_SERVER["PHP_SELF"];?> method=POST>
-                <input type="hidden" name="task" value="do_trade">
-                <input type="hidden" name="team1" value="<?php print $team1;?>">
-                <input type="hidden" name="team2" value="<?php print $team2;?>">
-                <table>
-                <tr>
-                <td align=center><b><?php print $team1;?></td>
-                <td align=center><b><?php print $team2;?></td>
-                </tr>
-                <tr>
-                <td><?php print $team1_dropdown;?></td>
-                <td><?php print $team2_dropdown;?></td>
-                </tr>
-                <tr>
-                <td align=center colspan=2><input type="submit" value="Make Trade"></td>
-                </tr>
-                </table>
-                </form>
-                </div>
-<?php
+        include 'templates/make_a_trade/form.php';
     }
 }
 
@@ -115,10 +79,9 @@ if ($task=="do_trade")
             $comments = "Trade {$team1} {$trade_date}";
             $sth = $db->prepare("UPDATE teams SET ibl_team = ?, comments = ?, status = 2 WHERE tig_name = ?");
             $data = array($team2, $comments, $player);
-            $db->execute($sth, $data);
-        }		
+            $sth->execute($data);
+        }
     }
-
 
     if (isset($team2_trade)) {
         foreach ($team2_trade as $rawPlayer) {
@@ -127,10 +90,9 @@ if ($task=="do_trade")
             $trade_date = date("m/y");
             $comments = "Trade {$team2} {$trade_date}";
             $sth = $db->prepare("UPDATE teams SET ibl_team = ?, comments = ?, status = 2 WHERE tig_name = ?");
-            $db->execute($sth, array($team1, $comments, $player));
-        }		
+            $sth->execute(array($team1, $comments, $player));
+        }
     }
-
 
     $team1_trade_report = "";
     $team2_trade_report = "";
@@ -148,22 +110,11 @@ if ($task=="do_trade")
 
 }
 
-if ($task=="")
-{
-?>
-        <div align=center>Please select two teams for the trade</div>	
-<?php
-    $sql="SELECT nickname FROM franchises ORDER BY nickname";
-    $result=$db->query($sql);
+if ($task=="") {
+    echo "<div align=center>Please select two teams for the trade</div>";
+    $franchise = new Franchise($db);
 
-    if ($result!=FALSE)
-    {		
-        while ($result->fetchInto($row))
-        {
-            $ibl_team[]=$row[0];
-        }
-    }
-
+    $ibl_team = $franchise->getAll();
     $team_option="";
 
     foreach ($ibl_team as $team)
@@ -171,25 +122,7 @@ if ($task=="")
         $team_option.="<option value='$team'>$team</option>\n";
     }
 
-?>
-        <div align=center>
-        <form action=<?php print $_SERVER["PHP_SELF"];?> method="POST">
-        <input name="task" type="hidden" value="show_rosters">
-        <select name="team1">
-                <?php print $team_option;?>
-        </select>
-        <select name="team2">
-                <?php print $team_option;?>
-        </select>
-        <br>
-        <input type="submit" value="Use These Teams">
-        </form>
-        </div>
-<?php
+    include 'templates/make_a_trade/show_rosters.php';
 }
 
-?>
-<hr>
-<div align=center>Return to <a href=roster_management.php>Roster Management</a></div>
-</body>
-</html>
+include 'templates/make_a_trade/footer.php';

@@ -1,6 +1,7 @@
-<?php
+<?hh
 
 // Script that processes an injury to be added to the system
+include 'boorstrap.php';
 include 'DB.php';
 include 'db_config.php';
 

@@ -1,14 +1,15 @@
-<?php
+<?hh
+require 'bootstrap.php';
 
 // Controller for main page
-include 'vendor/autoload.php';
-include 'db_config.php';
+require 'vendor/autoload.php';
+require 'db_config.php';
 
 
 // Grab all our models
-include './models/injuries.php';
-include './models/franchises.php';
-include './models/games.php';
+require './models/injuries.php';
+require './models/franchises.php';
+require './models/games.php';
 
 // Collect data
 $franchiseModel = new Franchise($db);
@@ -20,4 +21,4 @@ $injuries = $injuryModel->getAll($maxWeek);
 $franchises = $franchiseModel->getAll();
 
 // Display template
-include './templates/injury_management.php';
+require './templates/injury_management.php';

@@ -1,4 +1,5 @@
-<?php
+<?hh
+require 'bootstrap.php';
 $db = pg_connect("host=localhost dbname=ibl_stats user=chartjes password=9wookie");
 $year = 'pit' . $_GET['year'];
 $sql = "SELECT distinct(ibl) FROM $year ORDER BY ibl";
@@ -21,5 +22,3 @@ foreach ($teams as $team) {
 foreach ($starters as $team => $rpg) {
     echo "$team: Starters {$rpg} R/9, Relievers {$relievers[$team]} R/9<br />";
 }
-
-?>
