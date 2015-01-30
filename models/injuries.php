@@ -1,4 +1,4 @@
-<?php
+<?hh
 class Injury
 {
     protected $_db;

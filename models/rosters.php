@@ -1,7 +1,7 @@
 <?hh
 class Roster
 {
-    protected $_db;
+    protected \PDO $db;
 
     /**
      * Constructor for class
@@ -10,42 +10,38 @@ class Roster
      */
     public function __construct(PDO $db)
     {
-        $this->_db = $db;
+        $this->db = $db;
     }
 
     /**
-     * Get all players on a roster based on the team nicknam
+     * Get all players on a roster based on the team nickname
      *
      * @param string $nickname
-     * @return array
+     * @return array|boolean
      */
-    public function getByNickname($nickname)
+    public function getByNickname(string $nickname) : array
     {
-        $sql = "SELECT * FROM teams WHERE ibl_team = ? ORDER BY item_type DESC, tig_name";
-        $stmt = $this->_db->prepare($sql);
+        $sql = "SELECT *
+                FROM teams
+                WHERE ibl_team = ?
+                ORDER BY item_type DESC, tig_name";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute(array($nickname));
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if (!$results) {
-            return array();
+           return Vector {};
         }
 
-        $roster = array();
+        $roster = Vector {};
 
         foreach ($results as $row) {
-            $roster[] = $row;
+            $roster->add($row);
         }
 
+        // Handle things with rosters
         return $roster;
     }
-
-    /**
-     * Get all players on a roster based on the team nicknam
-     *
-     * @param string $nickname
-     * @param string $type
-     * @return array
-     */ 
 
     /**
      * Update the IBL team a player is on based on the player ID
@@ -57,7 +53,7 @@ class Roster
     public function updatePlayerTeam($iblTeam, $playerId)
     {
         $sql = "UPDATE teams SET ibl_team = ? WHERE id = ?";
-        $stmt = $this->_db->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute(array($iblTeam, $playerId));
     }
 
@@ -70,7 +66,7 @@ class Roster
     public function deletePlayerById($player_ids)
     {
         $sql = "DELETE FROM teams WHERE id = ?";
-        $stmt = $this->_db->prepare($sql);
+        $stmt = $this->db->prepare($sql);
 
         foreach ($player_ids as $player_id) {
             $stmt->execute($player_id);
@@ -85,9 +81,9 @@ class Roster
     public function releasePlayerByList($release_list)
     {
         $select_sql = "SELECT status FROM teams WHERE id = ?";
-        $select_stmt = $this->_db->prepare($select_sql);
+        $select_stmt = $this->db->prepare($select_sql);
         $update_sql = "UPDATE teams SET ibl_team = 'FA' WHERE id = ?";
-        $update_stmt = $this->_db->prepare($update_sql);
+        $update_stmt = $this->db->prepare($update_sql);
 
         foreach ($release_list as $release_id) {
             // If a player is uncarded and gets released, we need to delete them
@@ -180,11 +176,11 @@ class Roster
         }
 
         // Return an array of lists to display and log
-        return [
+        return Map {
             'updated_list' => $updated_list,
             'activate_list' => $activate_list,
             'deactivate_list' => $deactivate_list
-        ];
+        };
     }
 
     /**
@@ -200,7 +196,7 @@ class Roster
             UPDATE teams
             SET tig_name = ?, item_type = ?, status = ?, comments = ?
             WHERE id = ?";
-        $stmt = $this->_db->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $data = array(
             $new_data['tig_name'],
             $new_data['item_type'],
@@ -223,7 +219,7 @@ class Roster
         $sql = "
             INSERT INTO teams (tig_name, ibl_team, item_type, comments, status)
             VALUES (?, ?, ?, ?, ?)";
-        $stmt = $this->_db->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $data = array(
             $player_data['tig_name'],
             $player_data['ibl_team'],

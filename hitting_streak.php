@@ -1,44 +1,47 @@
 <?hh
-require 'bootstrap.php';
+require './bootstrap.php';
+require './db_config.php';
+$year = 'bat' . trim($_GET['year']);
 
-$db = pg_connect("host=localhost dbname=ibl_stats user=chartjes password=9wookie");
-$year = 'bat' . $_GET['year'];
-$sql = "SELECT mlb,name FROM $year GROUP BY mlb,name";
-$result = pg_query($db, $sql);
-$players = pg_fetch_all($result);
+$sql = "SELECT mlb,name FROM {$year} GROUP BY mlb,name";
+$stmt = $db->prepare($sql);
+$stmt->execute();
+$players = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$longestStreak = Map {};
 
 foreach ($players as $player) {
-	$player['name'] = pg_escape_string($player['name']);
-	$sql = "SELECT h,ab,bb,week FROM {$year} WHERE mlb='{$player['mlb']}' AND name = '{$player['name']}' ORDER BY week, home, away";
-	$result = pg_query($db, $sql);
-	$games = pg_fetch_all($result);
-	$streak = 0;
+    $streak = 0;
+    $sql = "SELECT h, ab, bb, week FROM {$year} WHERE mlb = ? AND name = ? ORDER BY week, home, away";
+    $stmt = $db->prepare($sql);
+    $stmt->execute([$player['mlb'], $player['name']]);
+    $games = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	$key = $player['mlb'] . ' ' . $player['name'];
 
-	foreach ($games as $game) {
+    foreach ($games as $game) {
 		if ($game['h'] > 0 || ($game['ab'] = 0 && $game['bb'] > 0)) {
 			$streak++;
-		} else {
-			if ($streak >= 10) {
-				$longestStreak[$key . " ending week {$game['week']}"] = $streak;
-			}
-			
+        } else {
+            $p = Pair {"{$key} ending week {$game['week']}", $streak};
+            $longestStreak = $longestStreak->add($p);
 			$streak = 0;
 		}
 	}
 
-	if ($streak > 0) {
-		unset($longestStreak[$key . " ending week {$game['week']}"]);
-		$longestStreak[$key . " still active"] = $streak;
-	}
+    if ($streak > 0) {
+        $longestStreak->remove("{$key} ending week {$game['week']}");
+        $p = Pair {"{$key} stil active", $streak};
+        $longestStreak->add($p);
+    }
 }
 
-arsort($longestStreak);
+$streaks = $longestStreak->filterWithKey(function($k, $v) {
+    return $v >= 10;
+});
+
+arsort($streaks);
 echo "Hitting streaks for $year<br />";
 
-foreach ($longestStreak as $player => $streak) {
+foreach ($streaks as $player => $streak) {
 	echo "$player - $streak games";
 	echo "<br />";
 }
-
-pg_close($db);

@@ -1,16 +1,19 @@
 <?hh
 require 'bootstrap.php';
-$db = pg_connect("host=localhost dbname=ibl_stats user=chartjes password=9wookie");
+require 'db_config.php';
+
 $year = 'pit' . $_GET['year'];
 $sql = "SELECT mlb,name FROM $year GROUP BY mlb,name";
-$result = pg_query($db, $sql);
-$players = pg_fetch_all($result);
+$stmt = $db->prepare($sql);
+$stmt->execute();
+$players = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($players as $player) {
-	$player['name'] = pg_escape_string($player['name']);
 	$sql = "SELECT gs,w,l,week FROM $year WHERE mlb='{$player['mlb']}' AND name = '{$player['name']}' ORDER BY week, home, away";
-	$result = pg_query($db, $sql);
-	$games = pg_fetch_all($result);
+    $sql = "SELECT gs,w,l,week FROM $year WHERE mlb= ? AND name = ? ORDER BY week, home, away";
+    $stmt = $db->prepare($sql);
+    $stmt->execute([$player['mlb'], $player['name']]);
+	$games = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	$streak = 0;
 	$key = $player['mlb'] . ' ' . $player['name'];
 
@@ -40,5 +43,3 @@ foreach ($longestStreak as $player => $streak) {
 	echo "$player - $streak games";
 	echo "<br />";
 }
-
-pg_close($db);

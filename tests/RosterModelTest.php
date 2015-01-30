@@ -4,8 +4,16 @@ use \Mockery as m;
 
 class RosterModelTest extends PHPUnit_Framework_TestCase
 {
+    private $prophecy;
+
+    public function setup()
+    {
+        $this->prophecy = new \Prophecy\Prophet;
+    }
+
     public function tearDown()
     {
+        $this->prophecy->checkPredictions();
         m::close();
     }
 
@@ -23,19 +31,14 @@ class RosterModelTest extends PHPUnit_Framework_TestCase
             [4, 'MAD#1', 'MAD', 3, 0, null]
         ];
 
-        // Create a mock of the response from $db->newSelect()
-        $new_select = $this->createMockNewSelect();
+        // Create our mock DB connection with the methods we need
+        $stmt = m::mock('PDOStatement');
+        $stmt->shouldReceive('execute')->andReturn(true);
+        $stmt->shouldReceive('fetchAll')->andReturn($expected_roster);
 
-        // Create our mock DB connection
-        $db = $this->getMockBuilder('stdClass')
-            ->setMethods(['newSelect', 'fetchAll'])
-            ->getMock();
-        $db->expects($this->once())
-            ->method('newSelect')
-            ->will($this->returnValue($new_select));
-        $db->expects($this->once())
-            ->method('fetchAll')
-            ->will($this->returnValue($expected_roster));
+        // Pass in an array as the second parameter to not run the constructor
+        $db = m::mock('PDODouble', []);
+        $db->shouldReceive('prepare')->andReturn($stmt);
 
         $roster = new Roster($db);
         $test_roster = $roster->getByNickname($nickname);
@@ -49,19 +52,13 @@ class RosterModelTest extends PHPUnit_Framework_TestCase
 
     public function testBadNicknameReturnsEmptyRoster()
     {
-        // Create a mock of the response from $db->newSelect()
-        $new_select = $this->createMockNewSelect();
+        $stmt = m::mock('PDOStatement');
+        $stmt->shouldReceive('execute')->andReturn(true);
+        $stmt->shouldReceive('fetchAll')->andReturn(null);
 
-        // Create our mock DB connection
-        $db = $this->getMockBuilder('stdClass')
-            ->setMethods(['newSelect', 'fetchAll'])
-            ->getMock();
-        $db->expects($this->once())
-            ->method('newSelect')
-            ->will($this->returnValue($new_select));
-        $db->expects($this->once())
-            ->method('fetchAll')
-            ->will($this->returnValue(null));
+        // Pass in an array as the second parameter to not run the constructor
+        $db = m::mock('PDODouble', []);
+        $db->shouldReceive('prepare')->andReturn($stmt);
 
         $roster = new Roster($db);
         $test_roster = $roster->getByNickname('BAD NICKNAME');
@@ -75,22 +72,15 @@ class RosterModelTest extends PHPUnit_Framework_TestCase
 
     public function testUpdatePlayerTeam()
     {
-        $new_update = $this->createMockNewUpdate();
-
-        $db = $this->getMockBuilder('stdClass')
-            ->setMethods(['newUpdate', 'query'])
-            ->getMock();
-        $db->expects($this->once())
-            ->method('newUpdate')
-            ->will($this->returnValue($new_update));
         $expected_values = [
             'ibl_team' => 'MAD',
             'id' => 1
         ];
-        $db->expects($this->once())
-            ->method('query')
-            ->with($new_update, $expected_values)
-            ->will($this->returnValue(true));
+        $stmt = m::mock('PDOStatement');
+        $stmt->shouldReceive('execute')->andReturn(true);
+
+        $db = m::mock('PDODouble', []);
+        $db->shouldReceive('prepare')->andReturn($stmt);
 
         $roster = new Roster($db);
         $expected_response = true;
@@ -105,6 +95,7 @@ class RosterModelTest extends PHPUnit_Framework_TestCase
 
     public function testDeletePlayerByIdWorksAsExpected()
     {
+        /*
         $new_delete = $this->createMockNewDelete();
 
         $player_values = ['player_id' => 1];
@@ -127,10 +118,12 @@ class RosterModelTest extends PHPUnit_Framework_TestCase
             $response,
             'deletePlayerById() did not return expected true response'
         );
+         */
     }
 
     public function testReleasePlayerByListWorksAsExpected()
     {
+        /*
         // Create a list of player ID's
         $release_list = [1, 2, 3, 4, 5];
 
@@ -166,11 +159,13 @@ class RosterModelTest extends PHPUnit_Framework_TestCase
 
         $roster = new Roster($db);
         $roster->releasePlayerByList($release_list);
+         */
     }
 
 
     public function testAddPlayerAddsPlayerCorrectly()
     {
+        /*
         // Create an array of player data
         $player_data = [
             'tig_name' => 'Testy McTesterton',
@@ -209,63 +204,6 @@ class RosterModelTest extends PHPUnit_Framework_TestCase
             $roster->addPlayer($player_data),
             'addPlayer() did not correctly add a new player'
         );
-    }
-
-    protected function createMockNewSelect()
-    {
-        // Create object that $db->newSelect() should return
-        $new_select = $this->getMockBuilder('stdClass')
-            ->setMethods(['cols', 'from', 'where', 'orderBy'])
-            ->getMock();
-        $new_select->expects($this->once())
-            ->method('cols')
-            ->will($this->returnValue($new_select));
-        $new_select->expects($this->once())
-            ->method('from')
-            ->will($this->returnValue($new_select));
-        $new_select->expects($this->once())
-            ->method('where')
-            ->will($this->returnValue($new_select));
-        $new_select->expects($this->once())
-            ->method('orderBy')
-            ->will($this->returnValue($new_select));
-
-        return $new_select;
-    }
-
-    protected function createMockNewDelete()
-    {
-        $new_delete = $this->getMockBuilder('stdClass')
-            ->setMethods(['from', 'where'])
-            ->getMock();
-        $new_delete->expects($this->once())
-            ->method('from')
-            ->will($this->returnValue($new_delete));
-        $new_delete->expects($this->once())
-            ->method('where')
-            ->will($this->returnValue($new_delete));
-
-        return $new_delete;
-    }
-
-    protected function createMockNewUpdate()
-    {
-        $new_update = $this->getMockBuilder('stdClass')
-            ->setMethods(['table', 'cols', 'set', 'where'])
-            ->getMock();
-        $new_update->expects($this->once())
-            ->method('table')
-            ->will($this->returnValue($new_update));
-        $new_update->expects($this->once())
-            ->method('cols')
-            ->will($this->returnValue($new_update));
-        $new_update->expects($this->any())
-            ->method('set')
-            ->will($this->returnValue($new_update));
-        $new_update->expects($this->once())
-            ->method('where')
-            ->will($this->returnValue($new_update));
-
-        return $new_update;
+         */
     }
 }
