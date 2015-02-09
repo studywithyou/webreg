@@ -19,7 +19,7 @@ class Roster
      * @param string $nickname
      * @return array|boolean
      */
-    public function getByNickname(string $nickname) : array
+    public function getByNickname(string $nickname) : Vector
     {
         $sql = "SELECT *
                 FROM teams

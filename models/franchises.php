@@ -1,4 +1,4 @@
-<?php
+<?hh
 class Franchise
 {
     protected $_db;
@@ -8,23 +8,23 @@ class Franchise
         $this->_db = $db;
     }
 
-    public function getAll()
+    public function getAll() : ImmMap
     {
         $sql = "
             SELECT *
             FROM franchises
             ORDER BY nickname
             ";
-        $franchises = [];
+        $franchises = new Map(null);
         $stmt = $this->_db->prepare($sql);
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($rows as $row) {
-            $franchises[$row['id']] = $row['nickname'];
+            $p = Pair {$row['id'], $row['nickname']};
+            $franchises->add($p);
         }
 
-        return $franchises;
+        return new ImmMap($franchises);
     }
 }
-
