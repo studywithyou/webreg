@@ -49,8 +49,34 @@ class Rotation
             ]);
 
         $sth = $this->pdo->prepare($update->getStatement());
-        echo $update->getStatement() . '<br>';
         return $sth->execute($update->getBindValues());
     }
-}
 
+    public function addWeek($week, $franchises)
+    {
+      $extra_week = [];
+
+      foreach ($franchises as $id => $franchise) {
+        $new_rotation = [
+          'id' => 0,
+          'week' => $week,
+          'rotation' => null,
+          'franchise_id' => $id
+        ];
+        array_push($extra_week, $new_rotation);
+      }
+
+      return $extra_week;
+    }
+
+    public function getMaxWeek()
+    {
+      $select = $this->db->newSelect();
+      $select->cols(['MAX(week) AS maxweek'])->from('rotations');
+      $sth = $this->pdo->prepare($select->getStatement());
+      $sth->execute($select->getBindValues());
+      $row = $sth->fetch(PDO::FETCH_ASSOC);
+
+      return $row['maxweek'];
+    }
+}

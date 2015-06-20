@@ -19,12 +19,22 @@ if ($current_week == 0) {
     $current_week = $max_week;
 }
 
-// load all rotations into the pager
 $franchiseModel = new Franchise($db);
 $franchises = $franchiseModel->getAll();
 $rotationModel = new Rotation($db);
 $rotations = $rotationModel->getAll();
 
+/**
+ * We need to add an empty set of rotations to our existing list for the week
+ * after the most current ones we have
+ */
+$rotation_max_week = $rotationModel->getMaxWeek();
+
+if ($rotation_max_week == $max_week) {
+  $rotations = array_merge($rotations, $rotationModel->addWeek($max_week + 1, $franchises));
+}
+
+// load all rotations into the pager
 $adapter = new RotationAdapter($rotations, $franchises);
 $adapter->processByWeek();
 $pagerfanta = new Pagerfanta($adapter);
