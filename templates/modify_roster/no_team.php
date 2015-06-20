@@ -1,6 +1,10 @@
 <?php
-$sql="SELECT DISTINCT(ibl_team) FROM teams ORDER BY ibl_team";
-$results = $db->fetchAll($sql);
+$pdo = new PDO('pgsql:host=localhost;dbname=ibl_stats;user=stats;password=st@ts=Fun');
+$select = $db->newSelect();
+$select->distinct()->cols(['ibl_team'])->from('teams')->orderBy(['ibl_team']);
+$sth = $pdo->prepare($select->getStatement());
+$sth->execute();
+$results = $sth->fetchAll(PDO::FETCH_ASSOC);
 
 if ($results !=FALSE)
 {

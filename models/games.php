@@ -1,17 +1,22 @@
 <?php
 class Game 
 {
-    protected $_db;
+    protected $db;
+    protected $pdo;
 
     public function __construct($db)
     {
-        $this->_db = $db;
+        $this->db = $db;
+        $this->pdo = new PDO('pgsql:host=localhost;dbname=ibl_stats;user=stats;password=st@ts=Fun');
     }
 
     public function getMaxWeek()
     {
-        $sql = "SELECT MAX(week) FROM games";
-        $row = $this->_db->fetchOne($sql);
+        $select = $this->db->newSelect();
+        $select->cols(['MAX(week) as max'])->from('games');
+        $sth = $this->pdo->prepare($select->getStatement());
+        $sth->execute($select->getBindValues());
+        $row = $sth->fetch(PDO::FETCH_ASSOC);
 
         return $row['max'] ?: 0;
     }

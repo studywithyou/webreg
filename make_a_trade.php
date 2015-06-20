@@ -11,11 +11,9 @@
 
 // Interface to make trades between two teams
 
-require_once 'DB.php';
 require_once 'db_config.php';
-
+$pdo = new PDO('pgsql:host=localhost;dbname=ibl_stats;user=stats;password=st@ts=Fun');
 $task="";
-$db =& DB::connect(DSN);
 
 if (isset($_POST["task"])) {
     $task=$_POST["task"];
@@ -33,18 +31,23 @@ if ($task=="show_rosters") {
         $task="";
     } else {
         // Okay, let's show the rosters so we can do a trade
-        $sql="SELECT tig_name FROM teams WHERE ibl_team='$team1' ORDER BY tig_name";
-        $result=$db->query($sql);
+        $select = $db->newSelect();
+        $select->from('teams')->cols(['tig_name'])->where('ibl_team = :team')->orderBy(['item_type', 'tig_name']);
+        $select->bindValue('team', $team1);
+        $sth = $pdo->prepare($select->getStatement());
+        $sth->execute($select->getBindValues());
+        $results = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-        while ($result->fetchInto($row)) {
-            $team1_list[]=trim($row[0]);
+        foreach ($results as $row) {
+            $team1_list[]=$row['tig_name'];
         }
 
-        $sql="SELECT tig_name FROM teams WHERE ibl_team='$team2' ORDER BY tig_name";
-        $result=$db->query($sql);
+        $select->bindValue('team', $team2);
+        $sth->execute($select->getBindValues());
+        $results = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-        while ($result->fetchInto($row)) {
-            $team2_list[]=trim($row[0]);
+        foreach ($results as $row) {
+            $team2_list[]=trim($row['tig_name']);
         }
 
         $t1_size=count($team1_list);
@@ -113,12 +116,15 @@ if ($task=="do_trade")
             $team1_trade_players[]=$player;
             $trade_date = date("m/y");
             $comments = "Trade {$team1} {$trade_date}";
-            $sth = $db->prepare("UPDATE teams SET ibl_team = ?, comments = ?, status = 2 WHERE tig_name = ?");
-            $data = array($team2, $comments, $player);
-            $db->execute($sth, $data);
-        }		
+            $update = $db->newUpdate();
+            $update
+                ->table('teams')
+                ->cols(['ibl_team' => $team2, 'comments' => $comments, 'status' => 2])
+                ->where('tig_name = ?', $player);
+            $sth = $pdo->prepare($update->getStatement());
+            $sth->execute($update->getBindValues());
+        }
     }
-
 
     if (isset($team2_trade)) {
         foreach ($team2_trade as $rawPlayer) {
@@ -126,9 +132,14 @@ if ($task=="do_trade")
             $team2_trade_players[]=$player;
             $trade_date = date("m/y");
             $comments = "Trade {$team2} {$trade_date}";
-            $sth = $db->prepare("UPDATE teams SET ibl_team = ?, comments = ?, status = 2 WHERE tig_name = ?");
-            $db->execute($sth, array($team1, $comments, $player));
-        }		
+            $update = $db->newUpdate();
+            $update
+                ->table('teams')
+                ->cols(['ibl_team' => $team1, 'comments' => $comments, 'status' => 2])
+                ->where('tig_name = ?', $player);
+            $sth = $pdo->prepare($update->getStatement());
+            $sth->execute($update->getBindValues());
+        }
     }
 
 
@@ -141,8 +152,8 @@ if ($task=="do_trade")
     $team1_transaction="Trades {$team1_trade_report} to {$team2} for {$team2_trade_report}";
     $team2_transaction="Trades {$team2_trade_report} to {$team1} for {$team1_trade_report}";
     require_once 'transaction_log.php';
-    transaction_log($team1,$team1_transaction);
-    transaction_log($team2,$team2_transaction);
+    transaction_log($team1, $team1_transaction, $db);
+    transaction_log($team2, $team2_transaction, $db);
 
     print "<div align=center><b>$team1</b> trades $team1_trade_report to <b>$team2</b> for $team2_trade_report<br></div>";
 
@@ -153,15 +164,14 @@ if ($task=="")
 ?>
         <div align=center>Please select two teams for the trade</div>	
 <?php
-    $sql="SELECT nickname FROM franchises ORDER BY nickname";
-    $result=$db->query($sql);
+    $select = $db->newSelect();
+    $select->cols(['nickname'])->from('franchises')->orderBy(['nickname']);
+    $sth = $pdo->prepare($select->getStatement());
+    $sth->execute();
+    $results = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-    if ($result!=FALSE)
-    {		
-        while ($result->fetchInto($row))
-        {
-            $ibl_team[]=$row[0];
-        }
+    foreach ($results as $result) {
+        $ibl_team[] = $result['nickname'];
     }
 
     $team_option="";

@@ -2,6 +2,7 @@
 class Roster
 {
     protected $_db;
+    protected $pdo;
 
     /**
      * Constructor for class
@@ -11,6 +12,7 @@ class Roster
     public function __construct($db)
     {
         $this->_db = $db;
+        $this->pdo = new PDO('pgsql:host=localhost;dbname=ibl_stats;user=stats;password=st@ts=Fun');
     }
 
     /**
@@ -22,18 +24,20 @@ class Roster
     public function getByNickname($nickname)
     {
         $select = $this->_db->newSelect();
-        $select->cols('[*]')
+        $select->cols(['*'])
             ->from('teams')
             ->where('ibl_team = :ibl_team')
-            ->orderBy('item_type DESC, tig_name');
-        $values = ['ibl_team' => $nickname];
-    	$results = $this->_db->fetchAll($select, $values);
+            ->orderBy(['item_type DESC', 'tig_name'])
+            ->bindValue('ibl_team', $nickname);
+        $sth = $this->pdo->prepare($select->getStatement());
+        $sth->execute($select->getBindValues());
+        $results = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-    	if (!$results) {
-    		return [];
-    	}
+        if (!$results) {
+            return [];
+        }
 
-    	$roster = [];
+        $roster = [];
 
         foreach ($results as $row) {
             $roster[] = $row;
@@ -52,15 +56,17 @@ class Roster
     public function updatePlayerTeam($iblTeam, $playerId)
     {
         $update = $this->_db->newUpdate();
-        $update->table('teams')
-            ->cols(['ibl_team'])
-            ->where('id = :id');
         $values = [
             'ibl_team' => $iblTeam,
             'id' => $playerId
         ];
-
-        return $this->_db->query($update, $values);
+        $update->table('teams')
+            ->cols(['ibl_team'])
+            ->set('ibl_team = :ibl_team')
+            ->where('id = :id')
+            ->bindValues(['ibl_team' => $iblTeam, 'id' => $playerId]);
+        $sth = $this->pdo->prepare($update->getStatement());
+        return $sth->execute($update->getBindValues());
     }
 
     /**
@@ -71,12 +77,18 @@ class Roster
      */
     public function deletePlayerById($player_id)
     {
-        $values = ['player_id' => $player_id];
         $delete = $this->_db->newDelete();
         $delete->from('teams')
-            ->where('id IN (:player_id)');
+            ->where('id = :id')
+            ->bindValue('id', $player_id);
+        $sth = $this->pdo->prepare($delete->getStatement());
+        $response = $sth->execute($delete->getBindValues());
 
-        return $this->_db->query($delete, $values);
+        if ($response !== false) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -101,16 +113,23 @@ class Roster
             $select = $this->_db->newSelect();
             $select->cols(['status'])
                 ->from('teams')
-                ->where('id = :id');
-            $row = $this->_db->fetchOne($select, ['id' => $release_id]);
+                ->where('id = :id')
+                ->bindValue('id', $release_id);
+            $sth = $this->pdo->prepare($select->getStatement());
+            $sth->execute($select->getBindValues());
+            $row = $sth->fetch(PDO::FETCH_ASSOC);
             $status = $row["status"];
             $values = ['id' => $release_id];
 
             if ($status == 3) { // player is uncarded, so they get deleted
-                $this->_db->query($delete, $values);
+                $query = $delete;
             } else {
-                $this->_db->query($update, $values);
+                $query = $update;
             }
+
+            $query->bindValues($values);
+            $sth = $this->pdo->prepare($query->getStatement());
+            $sth->execute($query->getBindValues());
         }
     }
 
@@ -212,11 +231,9 @@ class Roster
             'comments' => $new_data['comments']
         ];
         $update = $this->_db->newUpdate();
-        $update->table('teams')
-            ->cols(['tig_name', 'item_type', 'status', 'comments'])
-            ->where('id = :id');
-
-        return $this->_db->query($update, $bind);
+        $update->table('teams')->cols($bind)->where('id = :id')->bindValues($bind);
+        $sth = $this->pdo->prepare($update->getStatement());
+        return $sth->execute($update->getBindValues());
     }
 
     /**
@@ -229,9 +246,9 @@ class Roster
     public function addPlayer($player_data)
     {
         $insert = $this->_db->newInsert();
-        $insert->into('teams')
-            ->cols(['tig_name', 'ibl_team', 'item_type', 'comments', 'status']);
-        return $this->_db->query($insert, $player_data);
+        $insert->into('teams')->cols($player_data);
+        $sth = $this->pdo->prepare($insert->getStatement());
+        return $sth->execute($insert->getBindValues());
     }
 }
 

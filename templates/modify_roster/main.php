@@ -15,10 +15,8 @@ Modifying Roster for <b><?php print $ibl_team;?></b><br><br>
 <td><b>Release</b></td>
 </tr>
 <?php
-if ($result!=FALSE)
+if ($results != FALSE)
 {
-    $results = $db->fetchAll($sql);
-
     foreach ($results as $row) {
         $id=$row['id'];
         $tig_name=trim($row['tig_name']);

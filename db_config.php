@@ -1,6 +1,9 @@
 <?php
-$connection_factory = include 'vendor/aura/sql/scripts/instance.php';
-$db = $connection_factory->newInstance(
+require 'vendor/autoload.php';
+
+use Aura\SqlQuery\QueryFactory;
+
+$db = new QueryFactory(
     'pgsql',
     'host=localhost;dbname=ibl_stats',
     'stats',

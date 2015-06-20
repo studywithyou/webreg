@@ -20,6 +20,7 @@ include 'models/rosters.php';
 // Can be used to do the following:
 //		1. update player names and teams at the end of the season
 //		2. change status of players (Active, Inactive, UC)
+$pdo = new PDO('pgsql:host=localhost;dbname=ibl_stats;user=stats;password=st@ts=Fun');
 
 $get_team=0;
 $roster = new Roster($db);
@@ -55,7 +56,10 @@ if ($get_team==0) {
     if ($delete==1)
     {
         $delete_list=$_POST["delete"];
-        $response = $roster->deletePlayerById($delete_list);
+
+        foreach ($delete_list as $player_id) {
+            $roster->deletePlayerById($player_id);
+        }
     }
 
     // Hey, are we releasing anyone?
@@ -73,7 +77,6 @@ if ($get_team==0) {
         // Build log_entry for transaction log
         $log_entry="Releases ".implode(", ",$released_player);
         transaction_log($ibl_team, $log_entry, $db);
-
     }
 
     // Now, if we're modifying a roster, let's update the records we've worked on
@@ -121,8 +124,15 @@ if ($get_team==0) {
 
     // We've picked a team, let's grab all the players on their roster
     $ibl_team=$_POST["ibl_team"];
-    $sql="SELECT id,tig_name,item_type,comments,status FROM teams WHERE ibl_team='$ibl_team' ORDER BY tig_name";
-    $result=$db->query($sql);
+    $select = $db->newSelect();
+    $select->from('teams')
+        ->cols(['id', 'tig_name', 'item_type', 'comments', 'status'])
+        ->where('ibl_team = :team')
+        ->orderBy(['tig_name']);
+    $select->bindValue('team', $ibl_team);
+    $sth = $pdo->prepare($select->getStatement());
+    $sth->execute($select->getBindValues());
+    $results = $sth->fetchAll(PDO::FETCH_ASSOC);
 
     // Include our main template
     include 'templates/modify_roster/main.php';

@@ -11,11 +11,14 @@ function transaction_log($ibl_team, $log_entry, $db)
 {
     $insert = $db->newInsert();
     $insert->into('transaction_log')
-        ->cols(['ibl_team', 'log_entry', 'transaction_date'])
-        ->set('transaction_date', 'NOW()');
-    $bind = [
-        'ibl_team' => $ibl_team,
-        'log_entry' => $log_entry
-    ];
-    return $db->query($insert, $bind);
+        ->cols(
+            [
+                'ibl_team' => $ibl_team,
+                'log_entry' => $log_entry,
+                'transaction_date' => 'NOW()'
+            ]
+        );
+    $pdo = new PDO('pgsql:host=localhost;dbname=ibl_stats;user=stats;password=st@ts=Fun');
+    $sth = $pdo->prepare($insert->getStatement());
+    return $sth->execute();
 }
