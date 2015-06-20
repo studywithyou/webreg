@@ -12,8 +12,8 @@
 <h3 align="center">WebReg -- View Transactions</h3>
 <?php
 
-require_once 'DB.php';
 require_once 'db_config.php';
+$pdo = new PDO('pgsql:host=localhost;dbname=ibl_stats;user=stats;password=st@ts=Fun');
 
 $task="";
 
@@ -23,7 +23,7 @@ if ($task=="show_report")
 {
 	$from_date=$_POST["from_year"]."-".$_POST["from_month"]."-".$_POST["from_day"];
 	$to_date=$_POST["to_year"]."-".$_POST["to_month"]."-".$_POST["to_day"];
-	
+
 	if ($from_date>$to_date)
 	{
 		?>
@@ -36,21 +36,26 @@ if ($task=="show_report")
 	else
 	{
 		// Collect all the transactions that took place in that date range
-		$sql="SELECT ibl_team,log_entry FROM transaction_log WHERE (transaction_date>='$from_date' AND transaction_date<='$to_date') ORDER BY ibl_team";
-		$db =& DB::connect(DSN);
-		$result=$db->query($sql);
+		$select = $db->newSelect();
+		$select->cols(['ibl_team', 'log_entry'])
+			->from('transaction_log')
+			->where('transaction_date >= :from_date')
+			->where('transaction_date <= :to_date')
+			->orderBy(['ibl_team'])
+			->bindValues([$from_date, $to_date]);
+		$sth = $pdo->prepare($select->getStatement());
+		$sth->execute($select->getBindValues());
+		$results = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-		if ($result!=FALSE)
+		if ($results !=FALSE)
 		{
-			
-			while ($result->fetchInto($row,DB_FETCHMODE_ASSOC))
-			{
+			foreach ($results as $row) {
 				$ibl_team=$row['ibl_team'];
 				$log_entry=$row['log_entry'];
 				$transaction[$ibl_team][]=$log_entry;
 			}
 		}
-		
+
 		if (count($transaction)>0)
 		{
 			?>
@@ -60,7 +65,7 @@ if ($task=="show_report")
 			foreach ($transaction as $ibl_team=>$key)
 			{
 				$printed_team_name=FALSE;
-				
+
 				foreach ($key as $log_entry)
 				{
 					?>
@@ -87,13 +92,13 @@ if ($task=="show_report")
 		}
 	}
 }
-		
+
 
 if ($task=="")
 {
 	// Display range of years
 	$year_dropdown = "";
-	
+
 	for ($x=2005;$x<=date('Y');$x++)
 	{
 	    if ($x == date('Y')) {
@@ -101,9 +106,9 @@ if ($task=="")
 	    } else {
 	        $year_dropdown .= "<option value=$x>".$x."</option>";
 	    }
-		
+
 	}
-	
+
 	// Display range for months
 	$month_dropdown="<option value='01'>January</option>";
 	$month_dropdown.="<option value='02'>February</option>";
@@ -117,16 +122,16 @@ if ($task=="")
 	$month_dropdown.="<option value='10'>October</option>";
 	$month_dropdown.="<option value='11'>November</option>";
 	$month_dropdown.="<option value='12'>December</option>";
-	
+
 	// Display range for days
 	$day_dropdown = "";
-	
+
 	for($x=1;$x<=31;$x++)
 	{
 		if ($x<10) $x="0".$x;
 		$day_dropdown.="<option value='".$x."'>".$x."</option>";
 	}
-	
+
 	// Now, show the form so they can pick a date range.
 	?>
 	<div align=center>
@@ -155,7 +160,7 @@ if ($task=="")
 }
 
 
-?>	
+?>
 <hr>
 <div align="center"><a href="index.php">Return To WebReg Home Page</a></div>
 </body>

@@ -130,25 +130,26 @@ if ($task=="modify")
     {
         if (isset($delete[$id]) && $delete[$id]==1)
         {
-            $roster->deletePlayerById($id);
-            print "Deleted <b>$player</b> from free agent pool<br>";
+          $roster->deletePlayerById($id);
+          print "Deleted <b>$player</b> from free agent pool<br>";
         }
         else
         {
             if ($shadow_tig_name[$id] != $player)
             {
-                $update = $db->newUpdate();
-                $update->table('teams')
-                    ->set('tig_name', $player)
-                    ->where('id = ?', $id);
-                $sth = $pdo->prepare($update->getStatement());
-                $sth->execute($update->getBindValues());
-                print "Changed <b>".$shadow_tig_name[$id]."</b> to $player<br>";
+              $update = $db->newUpdate();
+              $update->table('teams')
+                ->cols(['tig_name' => $player])
+                ->where('id = :id')
+                ->bindValues(['id' => $id]);
+              $sth = $pdo->prepare($update->getStatement());
+              $sth->execute($update->getBindValues());
+              print "Changed <b>".$shadow_tig_name[$id]."</b> to $player<br>";
             }
 
             if ($shadow_type[$id] != $type[$id]) {
-                $db->execute($sth2, array($type[$id], $id));
-                print "Changed player type for {$player}<br>";
+              $db->execute($sth2, array($type[$id], $id));
+              print "Changed player type for {$player}<br>";
             }
 
         }
@@ -179,7 +180,7 @@ if ($task=="view")
         if ($tig_type==1) {
             $type_label[1]="selected";
             $type_label[2]="";
-        } 
+        }
         else {
             $type_label[1]="";
             $type_label[2]="selected";
@@ -230,7 +231,7 @@ if ($task=="do_add")
         $sth = $db->prepare("INSERT INTO teams (tig_name, ibl_team, item_type, status) VALUES (?, 'FA', ?, 1)");
 
         foreach ($fa_tig_name as $key=>$player)
-        {			
+        {
             if ($player!="")
             {
                 $db->execute($sth, array($player, $fa_type[$key]));
