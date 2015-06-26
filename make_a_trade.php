@@ -32,7 +32,7 @@ if ($task=="show_rosters") {
     } else {
         // Okay, let's show the rosters so we can do a trade
         $select = $db->newSelect();
-        $select->from('teams')->cols(['tig_name'])->where('ibl_team = :team')->orderBy(['item_type', 'tig_name']);
+        $select->from('teams')->cols(['tig_name'])->where('ibl_team = :team')->orderBy(['tig_name']);
         $select->bindValue('team', $team1);
         $sth = $pdo->prepare($select->getStatement());
         $sth->execute($select->getBindValues());
@@ -60,21 +60,21 @@ if ($task=="show_rosters") {
         }
 
         $team1_dropdown="<select multiple name=team1_trade[] size=$dropdown_size><br>";
-       
+
         foreach ($team1_list as $player) {
-            $team1_dropdown .= 
+            $team1_dropdown .=
                 '<option value="' . $player . '">' . $player . '</option><br>';
         }
-        
+
         $team1_dropdown.="</select>";
 
         $team2_dropdown="<select multiple name=team2_trade[] size=$dropdown_size><br>";
-      
+
         foreach ($team2_list as $player) {
-            $team2_dropdown .= 
+            $team2_dropdown .=
                 '<option value="' . $player . '">' . $player . '</option><br>';
         }
-        
+
         $team2_dropdown.="</select>";
 
         // Let's display the form to do the trade
@@ -162,7 +162,7 @@ if ($task=="do_trade")
 if ($task=="")
 {
 ?>
-        <div align=center>Please select two teams for the trade</div>	
+        <div align=center>Please select two teams for the trade</div>
 <?php
     $select = $db->newSelect();
     $select->cols(['nickname'])->from('franchises')->orderBy(['nickname']);

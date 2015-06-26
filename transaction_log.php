@@ -20,5 +20,5 @@ function transaction_log($ibl_team, $log_entry, $db)
         );
     $pdo = new PDO('pgsql:host=localhost;dbname=ibl_stats;user=stats;password=st@ts=Fun');
     $sth = $pdo->prepare($insert->getStatement());
-    return $sth->execute();
+    return $sth->execute($insert->getBindValues());
 }
