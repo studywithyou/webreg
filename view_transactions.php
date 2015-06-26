@@ -7,6 +7,15 @@
 <html>
 <head>
 <title>WebReg -- View Transactions</title>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script>
+$(function() {
+  $("#from_date").datepicker();
+  $("#to_date").datepicker();
+});
+</script>
 </head>
 <body>
 <h3 align="center">WebReg -- View Transactions</h3>
@@ -21,8 +30,8 @@ if (isset($_POST["task"])) $task=$_POST["task"];
 
 if ($task=="show_report")
 {
-  $from_date=$_POST["from_year"]."-".$_POST["from_month"]."-".$_POST["from_day"];
-  $to_date=$_POST["to_year"]."-".$_POST["to_month"]."-".$_POST["to_day"];
+  $from_date = date('Y-m-d', strtotime($_POST['from_date']));
+  $to_date = date('Y-m-d', strtotime($_POST['to_date']));
 
   if ($from_date>$to_date)
   {
@@ -97,42 +106,6 @@ if ($task=="show_report")
 
 if ($task=="")
 {
-  // Display range of years
-  $year_dropdown = "";
-
-  for ($x=2005;$x<=date('Y');$x++)
-  {
-      if ($x == date('Y')) {
-          $year_dropdown .= "<option value=$x selected>" . $x . "</option>";
-      } else {
-          $year_dropdown .= "<option value=$x>".$x."</option>";
-      }
-
-  }
-
-  // Display range for months
-  $month_dropdown="<option value='01'>January</option>";
-  $month_dropdown.="<option value='02'>February</option>";
-  $month_dropdown.="<option value='03'>March</option>";
-  $month_dropdown.="<option value='04'>April</option>";
-  $month_dropdown.="<option value='05'>May</option>";
-  $month_dropdown.="<option value='06'>June</option>";
-  $month_dropdown.="<option value='07'>July</option>";
-  $month_dropdown.="<option value='08'>August</option>";
-  $month_dropdown.="<option value='09'>September</option>";
-  $month_dropdown.="<option value='10'>October</option>";
-  $month_dropdown.="<option value='11'>November</option>";
-  $month_dropdown.="<option value='12'>December</option>";
-
-  // Display range for days
-  $day_dropdown = "";
-
-  for($x=1;$x<=31;$x++)
-  {
-    if ($x<10) $x="0".$x;
-    $day_dropdown.="<option value='".$x."'>".$x."</option>";
-  }
-
   // Now, show the form so they can pick a date range.
   ?>
   <div align=center>
@@ -142,15 +115,11 @@ if ($task=="")
   <table>
   <tr>
   <td><b>From</b></td>
-  <td><select name="from_year"><?php print $year_dropdown;?></select></td>
-  <td><select name="from_month"><?php print $month_dropdown;?></select></td>
-  <td><select name="from_day"><?php print $day_dropdown;?></select></td>
+  <td><input type="text" id = "from_date" name="from_date"></td>
   </tr>
   <tr>
   <td><b>To</b></td>
-  <td><select name="to_year"><?php print $year_dropdown;?></select></td>
-  <td><select name="to_month"><?php print $month_dropdown;?></select></td>
-  <td><select name="to_day"><?php print $day_dropdown;?></select></td>
+  <td><input type="text" id = "to_date" name="to_date"></td>
   </tr>
   <tr>
   <td colspan=4 align="center"><input type="submit" value="Run Report"></td>
