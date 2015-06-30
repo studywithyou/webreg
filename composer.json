@@ -1,7 +1,8 @@
 {
   "require" : {
     "aura/sqlquery": "^2.5",
-    "pagerfanta/pagerfanta": "^1.0"
+    "pagerfanta/pagerfanta": "^1.0",
+    "ramsey/uuid": "dev-master@dev"
   },
   "require-dev": {
     "phpunit/phpunit": "3.7.*",
