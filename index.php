@@ -9,6 +9,7 @@
 Please select an option from below<br><br>
 <a href="rotation_management.php">Rotation Management</a><br>
 <a href="rainout_management.php">Rainout Management</a><br>
+<a href="incentive_point_management.php">Incentive Point Management</a><br>
 <a href=roster_management.php>Roster Management</a><br>
 <a href=view_transactions.php>Print Transactions</a><br>
 <a href=view_rosters.php>Print Rosters</a><br>

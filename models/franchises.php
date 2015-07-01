@@ -1,5 +1,5 @@
 <?php
-class Franchise 
+class Franchise
 {
     protected $db;
     protected $pdo;
