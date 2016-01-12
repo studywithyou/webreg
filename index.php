@@ -13,7 +13,8 @@ Please select an option from below<br><br>
 <a href=roster_management.php>Roster Management</a><br>
 <a href=view_transactions.php>Print Transactions</a><br>
 <a href=view_rosters.php>Print Rosters</a><br>
-<a href=view_free_agents.php>Print Free Agents</a>
+<a href=view_free_agents.php>Print Free Agents</a><br>
+<a href=draft_player.php>Draft Players</a>
 </p>
 </body>
 </html>

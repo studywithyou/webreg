@@ -47,24 +47,42 @@ class Roster
     }
 
     /**
+     * Get player info based on a specific ID
+     *
+     * @param integer $id
+     * @return array
+     */
+     public function getById($id)
+     {
+        $select = $this->_db->newSelect();
+        $select->cols(['*'])
+            ->from('teams')
+            ->where('id = :id')
+            ->bindValue('id', $id);
+        $sth = $this->pdo->prepare($select->getStatement());
+        $sth->execute($select->getBindValues());
+        return $sth->fetch(PDO::FETCH_ASSOC);
+     }
+
+    /**
      * Update the IBL team a player is on based on the player ID
      *
      * @param string $iblTeam
      * @param integer $playerId
      * @return boolean
      */
-    public function updatePlayerTeam($iblTeam, $playerId)
+    public function updatePlayerTeam($iblTeam, $playerId, $comments = '')
     {
+        $values = ['id' => $playerId, 'ibl_team' => $iblTeam];
+
+        if ($comment !== '') {
+            $values['comments'] = $comments;
+        }
+
         $update = $this->_db->newUpdate();
-        $values = [
-            'ibl_team' => $iblTeam,
-            'id' => $playerId
-        ];
-        $update->table('teams')
-            ->cols(['ibl_team'])
-            ->set('ibl_team = :ibl_team')
-            ->where('id = :id')
-            ->bindValues(['ibl_team' => $iblTeam, 'id' => $playerId]);
+        $update->table('teams')->cols($values);
+        $update->where('id = :id')->bindValues($values);
+
         $sth = $this->pdo->prepare($update->getStatement());
         return $sth->execute($update->getBindValues());
     }
@@ -251,4 +269,3 @@ class Roster
         return $sth->execute($insert->getBindValues());
     }
 }
-
