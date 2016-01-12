@@ -76,7 +76,6 @@ class Rotation
       $sth = $this->pdo->prepare($select->getStatement());
       $sth->execute($select->getBindValues());
       $row = $sth->fetch(PDO::FETCH_ASSOC);
-
       return $row['maxweek'];
     }
 }
